@@ -1,60 +1,38 @@
 package com.example.finance_nosql.controller;
 
-
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.example.finance_nosql.domain.StockPrice;
-import com.example.finance_nosql.repository.StockPriceRepository;
-
-import java.util.Collections;
-import java.util.List;
+import com.example.finance_nosql.service.StockPriceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-
+import java.util.List;
 
 @RestController
 public class StockPriceController {
+    private final StockPriceService stockPriceService;
+    private static final Logger LOGGER = LoggerFactory.getLogger(StockPriceController.class);
 
-    private final StockPriceRepository stockPriceRepository;
-
-    public StockPriceController(StockPriceRepository stockPriceRepository) {
-        this.stockPriceRepository = stockPriceRepository;
+    public StockPriceController(StockPriceService stockPriceService) {
+        this.stockPriceService = stockPriceService;
     }
 
-private static final Logger LOGGER = LoggerFactory.getLogger(StockPriceController.class);
-
-
-@GetMapping("/stock-prices")
-public List<StockPrice> getStockPrices(@RequestParam(required = false) String stockSymbol) {
-    try {
-        List<StockPrice> stockPrices;
-        if (stockSymbol != null) {
-            stockPrices = stockPriceRepository.findByStockSymbol(stockSymbol);
-            LOGGER.info("Fetched {} stock prices for symbol {} from database.", stockPrices.size(), stockSymbol);
-        } else {
-            stockPrices = stockPriceRepository.findAll();
-            LOGGER.info("Fetched {} stock prices from database. and symbol null", stockPrices.size());
+    @GetMapping("/{stockSymbol}")
+    public ResponseEntity<List<StockPrice>> getStockPrices(@PathVariable String stockSymbol) {
+        List<StockPrice> stockPrices = stockPriceService.getStockPrices(stockSymbol);
+        if(stockPrices.isEmpty()){
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }else{
+            return new ResponseEntity<>(stockPrices, HttpStatus.OK);
         }
-        return stockPrices;
-    } catch (Exception e) {
-        LOGGER.error("Error occurred while fetching stock prices from database.", e);
-        return Collections.emptyList();
     }
-}
 
-
-
- @PostMapping("/stock-prices")
+    @PostMapping("/stock-prices")
     public StockPrice addStockPrice(@RequestBody StockPrice newStockPrice) {
-        StockPrice createdStockPrice = stockPriceRepository.save(newStockPrice);
+        StockPrice createdStockPrice = stockPriceService.saveStockPrice(newStockPrice);
         LOGGER.info("Added new stock price for {} to the database.", createdStockPrice.getStockSymbol());
         return createdStockPrice;
     }
-
-
 }

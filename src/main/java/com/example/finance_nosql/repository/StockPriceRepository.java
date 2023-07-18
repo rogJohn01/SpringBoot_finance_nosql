@@ -11,6 +11,5 @@ public interface StockPriceRepository extends MongoRepository<StockPrice, String
     @Query("{}")
     List<StockPrice> findAll();
     List<StockPrice> findByStockSymbol(String stockSymbol);
-
+    void deleteByStockSymbol(String stockSymbol);
 }
-

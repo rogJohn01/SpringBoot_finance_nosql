@@ -1,18 +1,28 @@
 package com.example.finance_nosql.domain;
 import java.time.Instant;
-import java.util.Date;
-import java.time.Instant;
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
 
 @Document(collection = "stock_prices")
-public class StockPrice {
+public class StockPrice implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
     @Id
+    @JsonProperty("id") // Jackson annotation for JSON serialization
     private String id;
+    
+    @JsonProperty("stock_symbol")
     private String stockSymbol;
+    
+    @JsonProperty("price")
     private Integer price;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
+    @JsonProperty("date")
     private Instant date;
     
     // getters and setters
